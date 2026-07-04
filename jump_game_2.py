@@ -1,42 +1,47 @@
-from typing import List
+from typing import List, Tuple
 
 
 class Solution:
-    def jump(self, nums: List[int]) -> int:
-        # let's try greedy first
-        # this will fail at places like [4, 1, 1, 3, 1, 1, 1]
-        # becasue we didn't consider the ones in the middle
-        #
-        #
-        # We should find a way to scan the whole jumpable range
-        # then see where is the furtherest you can jump
-        #
-        # may be we should consider 2 steps forward instead of 1
-        # still using greedy
-        # jump_count = 0
-        # pos = 0
-        # end_pos = len(nums) - 1
-        # while pos < end_pos:
-        #     if pos + nums[pos] >= end_pos:
-        #         return jump_count + 1
-        #     if nums[pos] < nums[pos + 1]:
-        #         jump_count += 1
-        #         pos += 1
-        #     else:
-        #         jump_count += 1
-        #         pos += nums[pos]
-        # return jump_count
+    def jump(self, nums: List[int]) -> Tuple[int, int]:
+        return (self.jump_greedy_n(nums), self.jump_greedy_n2(nums))
 
+    def jump_greedy_n(self, nums: List[int]) -> int:
+        jump_count = 0
+        last_furthest = nums[0]
+        new_furthest = nums[0]
+        if len(nums) == 1:
+            return 0
+        if last_furthest >= len(nums):
+            return 1
+        for i in range(len(nums) - 1):
+            new_furthest = max(new_furthest, i + nums[i])
+            if i == last_furthest:
+                jump_count += 1
+                last_furthest = new_furthest
+
+        jump_count += 1
+
+        return jump_count
+
+    def jump_greedy_n2(self, nums: List[int]) -> int:
+        # time complexity: O(n^2)
+        # also it's considering two steps ahead scenario and use greedy to find next step
         jump_count = 0
         pos = 0
         end_pos = len(nums) - 1
         while pos < end_pos:
             if pos + nums[pos] >= end_pos:
                 return jump_count + 1
-            if any(i + nums[i] >= end_pos for i in range(pos, pos + nums[pos] + 1)):
-                return jump_count + 2
-            pos = max(i + nums[i] for i in range(pos, pos + nums[pos]))
-            jump_count += 2
+            furtherest = 0
+            furtherest_index = 0
+            for i in range(pos + 1, pos + nums[pos] + 1):
+                if i + nums[i] >= end_pos:
+                    return jump_count + 2
+                if i + nums[i] > furtherest:
+                    furtherest = i + nums[i]
+                    furtherest_index = i
+            jump_count += 1
+            pos = furtherest_index
         return jump_count
 
 
@@ -53,4 +58,16 @@ nums = [1, 2, 3]
 print(Solution().jump(nums))
 
 nums = [1, 1, 1, 1]
+print(Solution().jump(nums))
+
+nums = [7, 0, 9, 6, 9, 6, 1, 7, 9, 0, 1, 2, 9, 0, 3]
+print(Solution().jump(nums))
+
+nums = [5, 9, 3, 2, 1, 0, 2, 3, 3, 1, 0, 0]
+print(Solution().jump(nums))
+
+nums = [2, 1]
+print(Solution().jump(nums))
+
+nums = [1, 2, 0, 1]
 print(Solution().jump(nums))
