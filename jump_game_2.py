@@ -2,13 +2,33 @@ from typing import List, Tuple
 
 
 class Solution:
-    def jump(self, nums: List[int]) -> Tuple[int, int]:
-        return (self.jump_greedy_n(nums), self.jump_greedy_n2(nums))
+    def jump(self, nums: List[int]) -> Tuple[int, int, int]:
+        return (
+            self.jump_greedy_n_elegant(nums),
+            self.jump_greedy_n(nums),
+            self.jump_greedy_n2(nums),
+        )
+
+    def jump_greedy_n_elegant(self, nums: List[int]) -> int:
+        # TODO: 2026-07-05 23:50:41
+        # This is a solution coming from leetcode solution area
+        # I wrote the function below but it was initially very cluncky
+        # I wanna know how they differ and why I didn't come up with this solution
+        n = len(nums)
+        current = 0
+        furthest = 0
+        jump = 0
+        for i in range(n - 1):
+            furthest = max(furthest, i + nums[i])
+            if i == current:
+                jump += 1
+                current = furthest
+        return jump
 
     def jump_greedy_n(self, nums: List[int]) -> int:
         jump_count = 0
-        last_furthest = nums[0]
-        new_furthest = nums[0]
+        last_furthest = 0
+        new_furthest = 0
         if len(nums) == 1:
             return 0
         if last_furthest >= len(nums):
@@ -18,8 +38,6 @@ class Solution:
             if i == last_furthest:
                 jump_count += 1
                 last_furthest = new_furthest
-
-        jump_count += 1
 
         return jump_count
 
