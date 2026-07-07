@@ -44,12 +44,95 @@ class Solution:
       store (the farthest); IS BFS because of HOW you walk (left-to-right rings).
     """
 
-    def jump(self, nums: List[int]) -> Tuple[int, int, int]:
+    def jump(self, nums: List[int]) -> Tuple[int, int, int, int, int]:
         return (
             self.jump_greedy_n_elegant(nums),
             self.jump_greedy_n(nums),
             self.jump_greedy_n2(nums),
+            self.jump_bfs_layers(nums),
+            self.jump_bfs_layers_my_version(nums),
         )
+
+    def jump_bfs_layers(self, nums: List[int]) -> int:
+        """
+        Explicit BFS: partition the indices into layers (rows), where row k
+        holds every index reachable in exactly k-1 jumps.
+
+        Build row by row:
+          * row 1 = {0}                 (0 jumps to reach the start)
+          * row k+1 = indices in (covered, max_reach_of_row_k] not yet placed
+        where max_reach_of_row_k = max(i + nums[i]) over i in row k.
+
+        NOTE: "biggest number in the row" must mean biggest REACH (i+nums[i]),
+        NOT biggest nums[i] value. e.g. nums=[1,2,1,1,4]: row 3 = {2,3}, both
+        have nums[i]=1, but reaches are 3 and 4 -> next boundary is 4.
+
+        Because reachability is monotonic (if index k is reachable in j jumps,
+        every index between the prior boundary and k is too), each row is a
+        CONTIGUOUS range, so this is a clean partition of indices into layers.
+        Total memory O(n) across all rows, not O(n^2).
+
+        Answer = (row index containing the last index) - 1 = len(rows) - 1.
+        Unlike the greedy, this version also detects unreachable ends (dead
+        end -> new boundary does not advance).
+        """
+        n = len(nums)
+        if n == 1:
+            return 0  # goal is the start, 0 jumps
+
+        rows: List[List[int]] = []
+        row = [0]  # indices reachable in `len(rows)` jumps so far
+        covered = 0  # rightmost index already placed in some row
+        while covered < n - 1:
+            rows.append(row)
+            # scout the whole row: how far can it extend the frontier?
+            new_covered = covered
+            for i in row:
+                new_covered = max(new_covered, i + nums[i])
+            if new_covered <= covered:
+                # dead end: no takeoff in this row advanced reach -> unreachable
+                return -1
+            # next layer is the contiguous band (covered, new_covered], capped
+            # at the goal since indices past it don't matter.
+            next_row = list(range(covered + 1, min(new_covered, n - 1) + 1))
+            covered = new_covered
+            row = next_row
+            if covered >= n - 1:
+                rows.append(row)  # the layer that completes / contains the goal
+                break
+        return len(rows) - 1
+
+    def jump_bfs_layers_my_version(self, nums: List[int]) -> int:
+        n = len(nums)
+        matrix: List[List[int]] = []
+        row = []
+        left_pointer = 0
+        right_pointer = nums[0]
+
+        while right_pointer <= n - 1:
+            print("matrix in loop is ", matrix)
+            print("current right pointer is ", right_pointer)
+            left_pointer = (
+                right_pointer  # note down the last element before we increment
+            )
+
+            # calculate new row range
+            for i in nums[left_pointer + 1 : right_pointer]:
+                right_pointer = max(right_pointer, i + nums[i])
+            print("current right pointer increments ", right_pointer)
+
+            if left_pointer >= right_pointer:
+                return -1
+
+            new_row = nums[left_pointer + 1 : right_pointer]
+            print("New row is ", new_row)
+
+            row = new_row
+            matrix.append(row)
+        matrix.append(row)  # because if the index is larger than the len of the nums
+        # last row won't go back to the loop and append to matrix
+        print("Last Matrix is ", matrix)
+        return len(matrix) - 1
 
     def jump_greedy_n_elegant(self, nums: List[int]) -> int:
         # This is a solution coming from leetcode solution area
@@ -109,29 +192,32 @@ class Solution:
         return jump_count
 
 
-nums = [1, 2]
-print(Solution().jump(nums))
-
 nums = [2, 3, 1]
-print(Solution().jump(nums))
+print(Solution().jump_bfs_layers_my_version(nums))
 
-nums = [4, 1, 1, 3, 1, 1, 1]
-print(Solution().jump(nums))
-
-nums = [1, 2, 3]
-print(Solution().jump(nums))
-
-nums = [1, 1, 1, 1]
-print(Solution().jump(nums))
-
-nums = [7, 0, 9, 6, 9, 6, 1, 7, 9, 0, 1, 2, 9, 0, 3]
-print(Solution().jump(nums))
-
-nums = [5, 9, 3, 2, 1, 0, 2, 3, 3, 1, 0, 0]
-print(Solution().jump(nums))
-
-nums = [2, 1]
-print(Solution().jump(nums))
-
-nums = [1, 2, 0, 1]
-print(Solution().jump(nums))
+# nums = [1, 2]
+# print(Solution().jump(nums))
+#
+# nums = [2, 3, 1]
+# print(Solution().jump(nums))
+#
+# nums = [4, 1, 1, 3, 1, 1, 1]
+# print(Solution().jump(nums))
+#
+# nums = [1, 2, 3]
+# print(Solution().jump(nums))
+#
+# nums = [1, 1, 1, 1]
+# print(Solution().jump(nums))
+#
+# nums = [7, 0, 9, 6, 9, 6, 1, 7, 9, 0, 1, 2, 9, 0, 3]
+# print(Solution().jump(nums))
+#
+# nums = [5, 9, 3, 2, 1, 0, 2, 3, 3, 1, 0, 0]
+# print(Solution().jump(nums))
+#
+# nums = [2, 1]
+# print(Solution().jump(nums))
+#
+# nums = [1, 2, 0, 1]
+# print(Solution().jump(nums))
