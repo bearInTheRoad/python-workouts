@@ -103,35 +103,60 @@ class Solution:
         return len(rows) - 1
 
     def jump_bfs_layers_my_version(self, nums: List[int]) -> int:
+        """
+        My own explicit-BFS take on Jump Game II.
+
+        Model: turn the array into a MATRIX where row k holds every element
+        reachable in exactly k-1 jumps. Build row by row:
+          * row 1 = {nums[0]}                  (the start, 0 jumps)
+          * row k+1 = nums[left_pointer .. right_pointer]   (values, not indices)
+        where [left_pointer, right_pointer] is the index window for row k.
+
+        Bookkeeping is a 2-pointer window [left_pointer, right_pointer]:
+          * left_pointer  = first index of the current row
+          * right_pointer = last index of the current row (also the frontier)
+        After scanning the row we extend the frontier by taking the max reach
+        (i + nums[i]) over its indices; the next row is the contiguous band
+        just past the old right edge. Contiguity holds because reachability is
+        monotonic — if index k is reachable in j jumps, so is everything between
+        the prior boundary and k — so a slice fully describes each layer.
+
+        Answer = len(matrix) - 1   (rows minus the implicit start row).
+
+        Differences vs jump_bfs_layers (the community-style one):
+          * Stores VALUES per row (better for debugging — you see the jumps),
+            whereas the community version stores indices.
+          * Handles n==1 implicitly: matrix starts [[nums[0]]], the while
+            condition (left_pointer=1 <= n-1=0) is immediately false, returns
+            len-1 = 0. No special-case guard needed.
+          * Dead-end detection is via a GAP (left_pointer > right_pointer, the
+            window emptied) rather than a STALL (new_covered <= covered). Same
+            outcome, fires one iteration later.
+        """
         n = len(nums)
-        matrix: List[List[int]] = []
-        row = []
-        left_pointer = 0
-        right_pointer = nums[0]
+        matrix: List[List[int]] = [[nums[0]]]   # row 1 = start value
+        row = []                                 # reassigned each loop; holds the values of the current row
+        left_pointer = 1                         # first index of the current row
+        right_pointer = nums[0]                  # last index of the current row (frontier)
 
-        while right_pointer <= n - 1:
-            print("matrix in loop is ", matrix)
-            print("current right pointer is ", right_pointer)
-            left_pointer = (
-                right_pointer  # note down the last element before we increment
-            )
-
-            # calculate new row range
-            for i in nums[left_pointer + 1 : right_pointer]:
-                right_pointer = max(right_pointer, i + nums[i])
-            print("current right pointer increments ", right_pointer)
-
-            if left_pointer >= right_pointer:
+        while left_pointer <= n - 1:
+            if left_pointer > right_pointer:
+                # gap: the window emptied -> no takeoff advanced reach -> unreachable
                 return -1
-
-            new_row = nums[left_pointer + 1 : right_pointer]
-            print("New row is ", new_row)
-
-            row = new_row
+            row = nums[left_pointer : min(right_pointer + 1, n)]
             matrix.append(row)
-        matrix.append(row)  # because if the index is larger than the len of the nums
-        # last row won't go back to the loop and append to matrix
-        print("Last Matrix is ", matrix)
+
+            # Extend the frontier by scouting every index in the current row.
+            # FREEZE the row's right edge first: range(...) evaluates its bound
+            # once at loop start, and we mutate right_pointer INSIDE the loop,
+            # so the bound must reference the old (frozen) value, not the live
+            # one. old_right is the row's right edge; right_pointer becomes the
+            # NEXT row's right edge as the loop runs.
+            old_right = right_pointer
+            for i in range(left_pointer, min(old_right + 1, n - 1)):
+                right_pointer = max(right_pointer, i + nums[i])
+            left_pointer = old_right + 1   # next row starts just past the frozen edge
+
         return len(matrix) - 1
 
     def jump_greedy_n_elegant(self, nums: List[int]) -> int:
@@ -192,32 +217,32 @@ class Solution:
         return jump_count
 
 
-nums = [2, 3, 1]
-print(Solution().jump_bfs_layers_my_version(nums))
-
-# nums = [1, 2]
-# print(Solution().jump(nums))
-#
-# nums = [2, 3, 1]
-# print(Solution().jump(nums))
-#
-# nums = [4, 1, 1, 3, 1, 1, 1]
-# print(Solution().jump(nums))
-#
-# nums = [1, 2, 3]
-# print(Solution().jump(nums))
-#
-# nums = [1, 1, 1, 1]
-# print(Solution().jump(nums))
-#
-# nums = [7, 0, 9, 6, 9, 6, 1, 7, 9, 0, 1, 2, 9, 0, 3]
-# print(Solution().jump(nums))
-#
-# nums = [5, 9, 3, 2, 1, 0, 2, 3, 3, 1, 0, 0]
-# print(Solution().jump(nums))
-#
-# nums = [2, 1]
-# print(Solution().jump(nums))
-#
 # nums = [1, 2, 0, 1]
-# print(Solution().jump(nums))
+# print(Solution().jump_bfs_layers_my_version(nums))
+
+nums = [1, 2]
+print(Solution().jump(nums))
+
+nums = [2, 3, 1]
+print(Solution().jump(nums))
+
+nums = [4, 1, 1, 3, 1, 1, 1]
+print(Solution().jump(nums))
+
+nums = [1, 2, 3]
+print(Solution().jump(nums))
+
+nums = [1, 1, 1, 1]
+print(Solution().jump(nums))
+
+nums = [7, 0, 9, 6, 9, 6, 1, 7, 9, 0, 1, 2, 9, 0, 3]
+print(Solution().jump(nums))
+
+nums = [5, 9, 3, 2, 1, 0, 2, 3, 3, 1, 0, 0]
+print(Solution().jump(nums))
+
+nums = [2, 1]
+print(Solution().jump(nums))
+
+nums = [1, 2, 0, 1]
+print(Solution().jump(nums))
