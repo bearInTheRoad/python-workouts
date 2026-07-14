@@ -37,37 +37,93 @@
 class RandomizedSet:
     def __init__(self):
         self.list = []
-        self.next_pos = 0
         self.dict = {}
 
     def insert(self, val: int) -> bool:
-        if self.dict.get(val, None) is None:
+        if self.dict.get(val, None) is not None:
             return False
-        self.dict[val] = self.next_pos
-        self.list[self.next_pos] = val
-        self.next_pos += 1
+        self.dict[val] = len(self.list)
+        self.list.append(val)
         return True
 
     def remove(self, val: int) -> bool:
         if self.dict.get(val) is None:
             return False
-        self.dict[val] = None
+        val_index = self.dict[val]
+        last_value_in_list = self.list[-1]
+        self.list[val_index], self.list[-1] = self.list[-1], self.list[val_index]
+        self.dict[val], self.dict[last_value_in_list] = (
+            self.dict[last_value_in_list],
+            self.dict[val],
+        )
+        self.dict.pop(val)
+        self.list.pop()
+
         return True
 
     def getRandom(self) -> int:
         from random import randint
 
-        picked = randint(0, max(self.next_pos - 1, 0))
-        while not self.dict.get(self.list[picked]):
-            picked = randint(0, max(self.next_pos - 1, 0))
+        picked = randint(0, max(len(self.list) - 1, 0))
         return self.list[picked]
 
 
+class RandomizedSetPythonSet:
+    def __init__(self):
+        self.rs = set()
+        self.len = 0
+
+    def insert(self, val: int) -> bool:
+        self.rs.add(val)
+        if self.len == len(self.rs):
+            return False
+        self.len = len(self.rs)
+        return True
+
+    def remove(self, val: int) -> bool:
+        try:
+            self.rs.remove(val)
+            self.len -= 1
+            return True
+        except KeyError:
+            return False
+
+    def getRandom(self) -> int:
+        from random import randint
+
+        picked = randint(0, self.len - 1)
+        return list(self.rs)[picked]
+
+
+# random = RandomizedSet()
+# print(random.insert(1), True)
+# print(random.remove(2), False)
+# print(random.insert(2), True)
+# print(random.getRandom(), "1 or 2")
+# print(random.remove(1), True)
+# print(random.insert(2), False)
+# print(random.getRandom(), 2)
+
+print("------------------------------")
+
+# [[],[0],[0],[0],[],[0],[0]]
+# random = RandomizedSet()
+# print(random.remove(0), True)
+# print(random.remove(0), False)
+# print(random.insert(0), True)
+# print(random.getRandom(), "1 or 2")
+# print(random.remove(0), True)
+# print(random.insert(0), False)
+
+# [[],[0],[1],[0],[2],[1],[]]
 random = RandomizedSet()
+print(random.insert(0), True)
 print(random.insert(1), True)
-print(random.remove(2), False)
+print(random.dict, "    ", random.list)
+print(random.remove(0), True)
+print(random.dict, "    ", random.list)
 print(random.insert(2), True)
-print(random.getRandom(), "1 or 2")
+print(random.dict, "    ", random.list)
 print(random.remove(1), True)
-print(random.insert(2), False)
-print(random.getRandom(), 2)
+print(random.dict, "    ", random.list)
+print(random.getRandom(), "2")
