@@ -17,7 +17,23 @@ class Solution:
 
         return [i * j for i, j in zip(left, right)]
 
+    def productExceptSelfSpaceEfficient(self, nums: List[int]) -> List[int]:
+        output = [1] * (len(nums))
+
+        for i in range(1, len(nums)):
+            output[i] = output[i - 1] * nums[i - 1]
+
+        j = len(nums) - 1
+        right = 1
+        while j >= 0:
+            output[j] = output[j] * right
+            right *= nums[j]
+            # breakpoint()
+            j -= 1
+
+        return output
+
 
 if __name__ == "__main__":
     solution = Solution()
-    print(solution.productExceptSelf([1, 2, 3, 4]))
+    print(solution.productExceptSelfSpaceEfficient([1, 2, 3, 4]))
