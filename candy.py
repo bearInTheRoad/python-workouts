@@ -13,22 +13,39 @@ class Solution:
     """
 
     def candy(self, ratings: List[int]) -> int:
-        candy = [1] * len(ratings)
+        return self.candy_brutForce(ratings)
 
-        for i in range(len(ratings)):
-            if i == 0:
-                if ratings[i] > ratings[i + 1] and candy[i] <= candy[i + 1]:
-                    candy[i] += 1
-            elif i == len(ratings) - 1:
-                if ratings[i] > ratings[i - 1] and candy[i] <= candy[i - 1]:
-                    candy[i] += 1
-            else:
-                print("index is ", i, " candy is ", candy, " ratings is ", ratings)
-                if ratings[i] > ratings[i - 1]:
-                    candy[i] = candy[i - 1] + 1
-                elif ratings[i] < ratings[i - 1] and candy[i - 1] == 1:
-                    candy[i] = candy[i - 1]
-                    candy[i - 1] += 1
+    def candy_brutForce(self, ratings: List[int]) -> int:
+        candy = [1] * len(ratings)
+        has_change = True
+        direction = 1
+
+        if len(ratings) == 1:
+            return 1
+        while has_change:
+            has_change = False
+            order = (
+                range(len(ratings))
+                if direction == 1
+                else range(len(ratings) - 1, -1, -1)
+            )
+            for i in order:
+                if i == 0:
+                    if ratings[i] > ratings[i + 1] and candy[i] <= candy[i + 1]:
+                        candy[i] = candy[i + 1] + 1
+                        has_change = True
+                elif i == len(ratings) - 1:
+                    if ratings[i] > ratings[i - 1] and candy[i] <= candy[i - 1]:
+                        candy[i] = candy[i - 1] + 1
+                        has_change = True
+                else:
+                    if ratings[i] > ratings[i - 1] and candy[i] <= candy[i - 1]:
+                        candy[i] = candy[i - 1] + 1
+                        has_change = True
+                    elif ratings[i] > ratings[i + 1] and candy[i] <= candy[i + 1]:
+                        candy[i] = candy[i + 1] + 1
+                        has_change = True
+            direction *= -1
 
         print(ratings)
         print(candy)
