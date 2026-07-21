@@ -13,7 +13,7 @@ class Solution:
     """
 
     def candy(self, ratings: List[int]) -> int:
-        return self.candy_brutForce(ratings)
+        return self.candy_twoPass(ratings)
 
     def candy_brutForce(self, ratings: List[int]) -> int:
         candy = [1] * len(ratings)
@@ -46,6 +46,25 @@ class Solution:
                         candy[i] = candy[i + 1] + 1
                         has_change = True
             direction *= -1
+
+        print(ratings)
+        print(candy)
+        return sum(candy)
+
+    def candy_twoPass(self, ratings: List[int]) -> int:
+        candy = [1] * len(ratings)
+
+        for i in range(1, len(ratings)):
+            if ratings[i] > ratings[i - 1]:
+                candy[i] = candy[i - 1] + 1
+            else:
+                candy[i] = 1
+
+        for i in range(len(ratings) - 2, -1, -1):
+            if ratings[i] > ratings[i + 1]:
+                candy[i] = max(candy[i + 1] + 1, candy[i])
+            else:
+                candy[i] = max(candy[i], 1)
 
         print(ratings)
         print(candy)
