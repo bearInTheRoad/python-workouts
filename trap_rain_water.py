@@ -43,61 +43,29 @@ class Solution:
         return total
 
     def trap_stack(self, height: List[int]) -> int:
-        total = 0
+        ans = 0
+        current = 0
         stack = []
-
-        for i in range(len(height) - 1):
-            if height[i] > height[i + 1] or i == 0:
-                stack.append(i)
-            else:
-                left_wall = stack[-1]
-                right_wall = i + 1
-                floor = i
-                print(
-                    "Left wall index ",
-                    left_wall,
-                    " value ",
-                    height[left_wall],
-                    " right wall index ",
-                    i + 1,
-                    " value ",
-                    height[i + 1],
-                    " floor wall index ",
-                    i,
-                    " value ",
-                    height[i],
-                )
-                total += max(
-                    min(height[right_wall], height[left_wall]) - height[floor], 0
-                ) * (right_wall - floor)
-                print(total)
-
-                while len(stack) > 1:
-                    floor = stack.pop()
-                    left_wall = stack[-1]
-                    print(
-                        "Left wall index ",
-                        left_wall,
-                        " value ",
-                        height[left_wall],
-                        " right wall index ",
-                        i + 1,
-                        " value ",
-                        height[i + 1],
-                        " floor wall index ",
-                        i,
-                        " value ",
-                        height[i],
-                    )
-                    total += max(
-                        min(height[right_wall], height[left_wall]) - height[floor], 0
-                    ) * (right_wall - floor)
-                    print(total)
-        return total
+        while current < len(height):
+            while len(stack) != 0 and height[current] > height[stack[-1]]:
+                left_wall = stack.pop()
+                if len(stack) == 0:
+                    break
+                floor = stack[-1]
+                distance = current - floor - 1
+                bounded_height = min(height[current], height[floor]) - height[left_wall]
+                ans += distance * bounded_height
+            stack.append(current)
+            current += 1
+        return ans
 
 
 solution = Solution()
 print(solution.trap([3, 1, 0, 2]), " ", 3)
+
+print("------------------------")
+solution = Solution()
+print(solution.trap([2, 1, 0, 1, 3]), " ", 4)
 
 print("------------------------")
 solution = Solution()
