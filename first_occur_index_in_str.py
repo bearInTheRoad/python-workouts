@@ -1,6 +1,9 @@
+import math
+
+
 class Solution:
     def strStr(self, haystack: str, needle: str) -> int:
-        return self.strStr_kmp(haystack, needle)
+        return self.strStr_rp(haystack, needle)
 
     def strStr_naive(self, haystack: str, needle: str) -> int:
         if len(haystack) < len(needle):
@@ -74,9 +77,59 @@ class Solution:
 
         return -1
 
+    def strStr_rp(self, haystack: str, needle: str) -> int:
+        """
+        This is not the standard implementation of radian karp.
+        I'm not considering int overflow here, which can be dangerous for other languages
+        Also I'm not using ord(c) - ord(a) pattern to make it consistent to base 26 math
+        It's currently using polynomial as positional fingerprints
+        """
+        if len(haystack) < len(needle):
+            return -1
+
+        target_num = sum(
+            [ord(e) * (26 ** (len(needle) - i)) for i, e in enumerate(needle)]
+        )
+
+        start = 0
+        end = start + len(needle)
+        current_num = sum(
+            [
+                ord(e) * (26 ** (len(needle) - i))
+                for i, e in enumerate(haystack[start:end])
+            ]
+        )
+        while end <= len(haystack):
+            print(
+                f"start {start} {haystack[start]}, end {end} {haystack[end - 1]}, current_num {current_num}, target_num {target_num}"
+            )
+            if current_num == target_num:
+                flag = True
+                for e1, e2 in zip(needle, haystack[start:end]):
+                    print(e1, e2)
+                    if e1 != e2:
+                        flag = False
+                        break
+                if flag:
+                    return start
+
+            if end < len(haystack):
+                current_num = (
+                    current_num - ord(haystack[start]) * (26 ** len(needle))
+                ) * 26
+                current_num += ord(haystack[end]) * 26
+            start += 1
+            end += 1
+
+        return -1
+
 
 solution = Solution()
 print(solution.strStr("hello", "ll"), 2)
+print("-----------------------")
+
+solution = Solution()
+print(solution.strStr("hell", "ll"), 2)
 print("-----------------------")
 
 solution = Solution()
@@ -98,4 +151,3 @@ print("-----------------------")
 
 solution = Solution()
 print(solution.strStr("abc", "c"), 2)
-
