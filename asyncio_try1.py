@@ -155,4 +155,5 @@ async def main5():
     await second_delay
 
 
-asyncio.run(main5())
+if __name__ == "__main__":
+    asyncio.run(main5())
