@@ -1,6 +1,14 @@
 from collections import Counter
 
 
+def compare_counter(freq_list, record_list):
+
+    for key in freq_list:
+        if freq_list[key] > record_list[key]:
+            return False
+    return True
+
+
 class Solution:
     def minWindow(self, s: str, t: str) -> str:
 
@@ -15,75 +23,63 @@ class Solution:
 
         freq_list = Counter(t)
 
-        valid_count = 0
-
         left, right = 0, 0
 
         min_window = 10**5 + 1
         min_index = (0, 0)
 
         record_list = Counter()
+        print(freq_list)
 
         while right < len(s):
-            print(left, right, valid_count, s[left : right + 1])
+            print("-----right ptr move-------")
+            print(left, right, s[left : right + 1], min_index)
+
+            if s[right] in freq_list:
+                record_list[s[right]] += 1
 
             while (
-                (s[right] in freq_list and record_list[s[right]] >= freq_list[s[right]])
-                or (
-                    s[left] not in freq_list
-                    and record_list[s[left]] > freq_list[s[left]]
+                left <= right
+                and left < len(s)
+                and (
+                    (s[left] not in freq_list)
+                    or (record_list[s[left]] > freq_list[s[left]])
                 )
-            ) and left <= right:
+            ):
                 if s[left] in freq_list:
-                    valid_count -= 1
                     record_list[s[left]] -= 1
                 left += 1
 
-            if s[right] in freq_list and record_list[s[right]] < freq_list[s[right]]:
-                record_list[s[right]] += 1
-                valid_count += 1
-
-            if valid_count == len(t) and min_window > left - right:
+            print(freq_list)
+            print(record_list)
+            print(compare_counter(freq_list, record_list))
+            if min_window > right - left + 1 and compare_counter(
+                freq_list, record_list
+            ):
                 min_window = right - left + 1
                 min_index = (left, right)
-
             right += 1
 
-        while right >= len(s):
-            right -= 1
-        print(left, right, valid_count, min_window, s[left : right + 1])
-        while (
-            valid_count < right - left + 1
-            and s[left] not in freq_list
-            and left <= right
-        ):
-            left += 1
-
-        while left > right:
-            left -= 1
-        print(left, right, valid_count, min_window, s[left : right + 1])
-        while (
-            valid_count < right - left + 1
-            and s[right] not in freq_list
-            and left <= right
-        ):
-            right -= 1
-        if min_window > right - left + 1:
+        if min_window > right - left + 1 and min_window != 10**5 + 1:
             min_window = right - left + 1
             min_index = (left, right)
 
-        return s[min_index[0] : min_index[1] + 1]
+        return s[min_index[0] : min_index[1] + 1] if min_window != 10**5 + 1 else ""
 
 
 solution = Solution()
-print(solution.minWindow("ADOBECODEBANC", "ABC"), "BANC")
+# print(solution.minWindow("ADOBECODEBANC", "ABC"), "BANC")
 
-print(solution.minWindow("a", "b"), "")
+# print(solution.minWindow("a", "b"), "")
+#
+# print(solution.minWindow("ab", "a"), "a")
+#
+# print(solution.minWindow("ab", "A"), "")
+#
+# print(solution.minWindow("abc", "cba"), "abc")
+#
+# print(solution.minWindow("cabwefgewcwaefgcf", "cae"), "cwae")
+#
+# print(solution.minWindow("aaaaaaaaaaaabbbbbcdd", "abcdd"), "abbbbbcdd")
 
-print(solution.minWindow("ab", "a"), "")
-
-print(solution.minWindow("ab", "A"), "")
-
-print(solution.minWindow("abc", "cba"), "abc")
-
-print(solution.minWindow("cabwefgewcwaefgcf", "cae"), "cwae")
+print(solution.minWindow("babb", "baba"), "")
