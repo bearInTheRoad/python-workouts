@@ -3,7 +3,7 @@ from collections import Counter
 
 
 class Solution:
-    def isValidSudoku(self, board: List[List[str]]) -> bool:
+    def isValidSudoku_bruteFroce(self, board: List[List[str]]) -> bool:
         for row in board:
             total = Counter(row)
             del total["."]
@@ -29,6 +29,29 @@ class Solution:
             if len(total) > 0 and total.most_common(1)[0][1] > 1:
                 print(total)
                 return False
+
+        return True
+
+    def isValidSudoku_bitwise(self, board: List[List[str]]) -> bool:
+        rows = [0] * 9
+        columns = [0] * 9
+        boxes = [0] * 9
+
+        for row in range(9):
+            for column in range(9):
+                if board[row][column] == ".":
+                    continue
+
+                pos = int(board[row][column]) - 1
+                value = 1 << pos
+
+                group = (row // 3) * 3 + column // 3
+                if rows[row] & value or columns[column] & value or boxes[group] & value:
+                    return False
+
+                rows[row] |= value
+                columns[column] |= value
+                boxes[group] |= value
 
         return True
 
